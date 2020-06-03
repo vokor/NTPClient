@@ -1,21 +1,22 @@
-import org.apache.commons.net.ntp.NTPUDPClient;
-import org.apache.commons.net.ntp.TimeInfo;
-
 import java.io.IOException;
-import java.net.InetAddress;
+import java.util.Date;
 
 class Main {
     // Example of host name: clock.psu.edu
     public static void main(String[] args) throws IOException {
         if (args == null || args.length > 1) {
-            System.err.println("Usage: NTPClient <hostname>");
+            System.err.println("Usage: SNTPClient <hostname>");
             System.exit(1);
         }
-        NTPUDPClient client = new NTPUDPClient();
-        client.setDefaultTimeout(10000);
-        InetAddress hostAddr = InetAddress.getByName(args[0]);
-        TimeInfo info = client.getTime(hostAddr);
-        NTPClient.processResponse(info);
+        byte leapIndicator = 0;
+        byte mode = 3;
+        byte version = 3;
+
+        byte[] request = new byte[48];
+        request[0] = (byte) (leapIndicator << 6 | version << 3 | mode);
+        NTPClient client = new NTPClient(args[0]);
+        Date date = new Date(client.processResponse(request));
+        System.out.println(date.toString());
         client.close();
     }
 }
